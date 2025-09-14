@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Editar Livro</h2>
+<form method="POST">
+  <label>Título: <input type="text" name="titulo" value="{{ livro[1] }}" required></label><br>
+  <label>Autor: <input type="text" name="autor" value="{{ livro[2] }}" required></label><br>
+  <label>Ano: <input type="number" name="ano" value="{{ livro[3] }}"></label><br>
+  <label>Gênero: <input type="text" name="genero" value="{{ livro[4] }}"></label><br>
+  <label>Status:
+    <select name="status_leitura">
+      <option value="não lido" {% if livro[5]=="não lido" %}selected{% endif %}>Não lido</option>
+      <option value="lendo" {% if livro[5]=="lendo" %}selected{% endif %}>Lendo</option>
+      <option value="concluído" {% if livro[5]=="concluído" %}selected{% endif %}>Concluído</option>
+    </select>
+  </label><br>
+  <label>Nota: <input type="number" name="nota" min="0" max="10" value="{{ livro[6] }}"></label><br>
+  <button type="submit">Atualizar</button>
+</form>
+{% endblock %}

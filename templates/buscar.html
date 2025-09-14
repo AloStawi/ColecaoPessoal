@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Buscar Livro</h2>
+<form method="POST">
+  <input type="text" name="termo" placeholder="Digite título ou ISBN" required>
+  <button type="submit">Buscar</button>
+</form>
+
+{% if livros %}
+<h3>Resultados:</h3>
+<ul>
+  {% for livro in livros %}
+  <li>
+    <img src="{{ livro.capa }}" alt="Capa">
+    <b>{{ livro.titulo }}</b> - {{ livro.autor }} ({{ livro.ano }})
+    <p>{{ livro.descricao }}</p>
+    <form action="/addLivro" method="POST">
+      <input type="hidden" name="titulo" value="{{ livro.titulo }}">
+      <input type="hidden" name="autor" value="{{ livro.autor }}">
+      <input type="hidden" name="ano" value="{{ livro.ano }}">
+      <button type="submit">Adicionar à coleção</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
