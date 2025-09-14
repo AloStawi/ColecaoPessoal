@@ -59,7 +59,7 @@ venv\Scripts\activate      # Windows
 pip install -r requirements.txt
 ```
 
-### 5️⃣ Configurar credenciais no `app.py`
+### 4️⃣ Configurar credenciais no `app.py`
 Edite estas linhas com seu usuário/senha do MySQL:
 ```python
 app.config['MYSQL_HOST'] = 'localhost'
@@ -68,7 +68,7 @@ app.config['MYSQL_PASSWORD'] = 'sua_senha'
 app.config['MYSQL_DB'] = 'colecao_livros'
 ```
 
-### 6️⃣ Rodar a aplicação
+### 5️⃣ Rodar a aplicação
 ```bash
 python app.py
 ```
