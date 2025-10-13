@@ -1,19 +1,221 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>Editar Livro</h2>
-<form method="POST">
-  <label>Título: <input type="text" name="titulo" value="{{ livro[1] }}" required></label><br>
-  <label>Autor: <input type="text" name="autor" value="{{ livro[2] }}" required></label><br>
-  <label>Ano: <input type="number" name="ano" value="{{ livro[3] }}"></label><br>
-  <label>Gênero: <input type="text" name="genero" value="{{ livro[4] }}"></label><br>
-  <label>Status:
-    <select name="status_leitura">
-      <option value="não lido" {% if livro[5]=="não lido" %}selected{% endif %}>Não lido</option>
-      <option value="lendo" {% if livro[5]=="lendo" %}selected{% endif %}>Lendo</option>
-      <option value="concluído" {% if livro[5]=="concluído" %}selected{% endif %}>Concluído</option>
-    </select>
-  </label><br>
-  <label>Nota: <input type="number" name="nota" min="0" max="10" value="{{ livro[6] }}"></label><br>
-  <button type="submit">Atualizar</button>
-</form>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Livro - Biblioteca Pessoal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* ======= ESTILO ESPECÍFICO DO FORMULÁRIO ======= */
+    .edit-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+      max-width: 650px;
+      margin: 40px auto;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .edit-container h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
+      color: #2c3e50;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-grid .full {
+      grid-column: span 2;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #444;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="url"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 4px rgba(0, 123, 255, 0.3);
+      outline: none;
+    }
+
+    textarea {
+      resize: none;
+      height: 100px;
+    }
+
+    .btn-area {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .btn-salvar,
+    .btn-cancelar {
+      padding: 10px 25px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-salvar {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .btn-salvar:hover {
+      background-color: #005dc8;
+    }
+
+    .btn-cancelar {
+      background-color: #f1f1f1;
+      color: #333;
+    }
+
+    .btn-cancelar:hover {
+      background-color: #e1e1e1;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container-dashboard">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="icone">📚</div>
+        <div class="info">
+          <strong>Biblioteca Pessoal</strong>
+          <small>Sua coleção digital</small>
+        </div>
+      </div>
+
+      <nav class="nav-principal">
+        <p class="nav-titulo">NAVEGAÇÃO</p>
+        <a href="{{ url_for('dashboard') }}" class="nav-link"><i class="fas fa-home"></i>Dashboard</a>
+        <a href="{{ url_for('biblioteca') }}" class="nav-link ativo"><i class="fas fa-book-open"></i>Minha Biblioteca</a>
+        <a href="{{ url_for('add') }}" class="nav-link"><i class="fas fa-plus-circle"></i>Adicionar Livro</a>
+      </nav>
+    </aside>
+
+    <main class="conteudo-principal">
+      <div class="edit-container">
+        <h1><i class="fas fa-edit"></i> Editar Livro</h1>
+
+        <form method="POST" action="{{ url_for('edit', id=livro.id) }}">
+          <div class="form-grid">
+
+            <div>
+              <label for="titulo">Título</label>
+              <input type="text" id="titulo" name="titulo" value="{{ livro.titulo }}" required>
+            </div>
+
+            <div>
+              <label for="autor">Autor</label>
+              <input type="text" id="autor" name="autor" value="{{ livro.autor }}" required>
+            </div>
+
+            <div>
+              <label for="ano">Ano</label>
+              <input type="number" id="ano" name="ano" value="{{ livro.ano }}">
+            </div>
+
+            <div>
+              <label for="genero">Gênero</label>
+              <input type="text" id="genero" name="genero" value="{{ livro.genero }}">
+            </div>
+
+            <div>
+              <label for="paginas_totais">Total de Páginas</label>
+              <input type="number" id="paginas_totais" name="paginas_totais" value="{{ livro.paginas_totais }}">
+            </div>
+
+            <div>
+              <label for="paginas_lidas">Páginas Lidas</label>
+              <input type="number" id="paginas_lidas" name="paginas_lidas" value="{{ livro.paginas_lidas }}">
+            </div>
+
+            <div>
+              <label for="status_leitura">Status</label>
+              <select id="status_leitura" name="status_leitura">
+                <option value="nao_lido" {% if livro.status_leitura=='nao_lido' %}selected{% endif %}>Não Lido</option>
+                <option value="lendo" {% if livro.status_leitura=='lendo' %}selected{% endif %}>Lendo</option>
+                <option value="concluído" {% if livro.status_leitura=='concluído' %}selected{% endif %}>Concluído</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="nota">Nota (0-5)</label>
+              <input type="number" id="nota" name="nota" min="0" max="5" step="0.5" value="{{ livro.nota }}">
+            </div>
+
+            <div class="full">
+              <label for="capa">URL da Capa</label>
+              <input type="url" id="capa" name="capa" value="{{ livro.capa }}">
+            </div>
+
+            <div class="full">
+              <label for="descricao">Descrição / Observações</label>
+              <textarea id="descricao" name="descricao">{{ livro.descricao }}</textarea>
+            </div>
+
+          </div>
+
+          <div class="btn-area">
+            <button type="submit" class="btn-salvar"><i class="fas fa-save"></i> Salvar Alterações</button>
+            <a href="{{ url_for('biblioteca') }}" class="btn-cancelar"><i class="fas fa-arrow-left"></i> Voltar</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</body>
+
+</html>

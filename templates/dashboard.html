@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Biblioteca Pessoal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+
+<body>
+  <div class="container-dashboard">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="icone">📚</div>
+        <div class="info">
+          <strong>Biblioteca Pessoal</strong>
+          <small>Sua coleção digital</small>
+        </div>
+      </div>
+
+      <nav class="nav-principal">
+        <p class="nav-titulo">NAVEGAÇÃO</p>
+
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}ativo{% endif %}"><i class="fas fa-home"></i>Dashboard</a>
+
+        <a href="{{ url_for('biblioteca') }}" class="nav-link {% if request.endpoint == 'biblioteca' %}ativo{% endif %}"><i class="fas fa-book-open"></i>Minha Biblioteca</a>
+
+        <a href="{{ url_for('add') }}" class="nav-link {% if request.endpoint == 'add' %}ativo{% endif %}"><i class="fas fa-plus-circle"></i>Adicionar Livro</a>
+      </nav>
+      <!-- <div class="nav-secao">
+        <strong>ESTATÍSTICAS</strong>
+        <a href="#" class="nav-link"><i class="fas fa-chart-bar"></i>Análises de leitura</a>
+        <a href="#" class="nav-link"><i class="fas fa-list-ul"></i>Lista de Desejos</a>
+        <a href="#" class="nav-link"><i class="fas fa-bullseye"></i>Objetivos de leitura</a>
+      </div> -->
+
+      <div class="perfil">
+        <div class="avatar">😊</div>
+        <div>
+          <p class="nome">Leitor</p>
+          <small>Minha biblioteca pessoal</small>
+        </div>
+      </div>
+    </aside>
+    <main class="conteudo-principal">
+      <header class="topo-principal">
+        <div>
+          <h1>Bem-vindo à sua Biblioteca</h1>
+          <p>Acompanhe sua jornada de leitura e descubra novos mundos</p>
+        </div>
+        <a href="{{ url_for('add') }}" class="btn-principal"><i class="fas fa-plus"></i> Adicionar Livro</a>
+      </header>
+
+      <section class="resumo-stats">
+        <div class="card stat-card">
+          <div class="icon-stat icon-azul"><i class="fas fa-book"></i></div>
+          <p class="titulo">Total de Livros</p>
+          <p class="valor">{{ total_livros }}</p>
+          <small>Em sua biblioteca</small>
+        </div>
+        <div class="card stat-card">
+          <div class="icon-stat icon-verde"><i class="fas fa-check"></i></div>
+          <p class="titulo">Livros Concluídos</p>
+          <p class="valor">{{ concluidos }}</p>
+          <small>Leituras finalizadas</small>
+        </div>
+        <div class="card stat-card">
+          <div class="icon-stat icon-laranja"><i class="fas fa-clock"></i></div>
+          <p class="titulo">Lendo Atualmente</p>
+          <p class="valor">{{ lendo }}</p>
+          <small>Em andamento</small>
+        </div>
+        <div class="card stat-card">
+          <div class="icon-stat icon-roxo"><i class="fas fa-file-alt"></i></div>
+          <p class="titulo">Páginas Lidas</p>
+          <p class="valor">{{ paginas_lidas }}</p>
+          <small>Total acumulado</small>
+        </div>
+      </section>
+
+      <section class="secao-principal-layout">
+        <div class="card secao-lendo-atualmente">
+          <div class="secao-header">
+            <h3><i class="fas fa-book-reader"></i> Lendo Atualmente</h3>
+            <a href="{{ url_for('biblioteca') }}" class="ver-todos">Ver todos <i class="fas fa-arrow-right"></i></a>
+          </div>
+
+          <div class="grade-livros">
+            {% for livro in lendo_atualmente %}
+            <div class="livro-card-dashboard">
+              <div class="capa-container">
+                {% if livro.capa %}
+                <img src="{{ livro.capa }}" alt="Capa de {{ livro.titulo }}">
+                {% else %}
+                <div class="sem-capa"><i class="fas fa-book-open"></i></div>
+                {% endif %}
+                <span class="status lendo">Lendo</span>
+              </div>
+              <div class="info">
+                <h4>{{ livro.titulo }}</h4>
+                <p class="autor">{{ livro.autor }}</p>
+                <span class="tag-genero">{{ livro.genero }}</span>
+
+                {% set progresso = (livro.paginas_lidas / livro.paginas_total * 100) | round(0) %}
+                <div class="progresso-info-dashboard">
+                  <div class="progresso-valores">
+                    <small>{{ livro.paginas_lidas | round(0) }} / {{ livro.paginas_total }} páginas</small>
+                    <small class="porcentagem-concluido">{{ progresso }}%</small>
+                  </div>
+                  <div class="barra-progresso">
+                    <div class="progresso" style="width: {{ progresso }}%;"></div>
+                  </div>
+                </div>
+
+                <div class="acoes-card">
+                  <a href="#" class="btn-detalhes">Ver Detalhes</a>
+                  <a href="{{ url_for('edit', id=livro.id) }}" class="btn-editar-card"><i class="fas fa-edit"></i> Editar</a>
+                </div>
+              </div>
+            </div>
+            {% else %}
+            <p class="msg-vazio">Você não está lendo nenhum livro no momento. Que tal adicionar um?</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="secao-lateral">
+          <div class="card card-lateral progresso-mes">
+            <h3><i class="fas fa-trophy"></i> Progresso de Leitura</h3>
+            <p class="valor-grande">{{ concluidos_mes }}</p>
+            <p class="subtitulo">Livros concluídos</p>
+            <div class="meta-info">
+              <p>Meta mensal</p>
+              <p>2 livros</p>
+              <p>Páginas lidas no total</p>
+              <p>{{ paginas_mes }}</p>
+            </div>
+          </div>
+
+          <div class="card card-lateral acoes-rapidas">
+            <h3>Ações Rápidas</h3>
+            <a href="{{ url_for('add') }}" class="btn-acao-rapida"><i class="fas fa-plus"></i> Adicionar Livro</a>
+            <a href="{{ url_for('biblioteca') }}" class="btn-acao-rapida"><i class="fas fa-book"></i> Ver Biblioteca</a>
+            <a href="#" class="btn-acao-rapida"><i class="fas fa-chart-pie"></i> Estatísticas</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

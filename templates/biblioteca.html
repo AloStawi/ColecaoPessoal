@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Biblioteca - Biblioteca Pessoal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="container-dashboard">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="icone">📚</div>
+        <div class="info">
+          <strong>Biblioteca Pessoal</strong>
+          <small>Sua coleção digital</small>
+        </div>
+      </div>
+
+      <nav class="nav-principal">
+        <p class="nav-titulo">NAVEGAÇÃO</p>
+
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}ativo{% endif %}">
+          <i class="fas fa-home"></i>Dashboard</a>
+
+        <a href="{{ url_for('biblioteca') }}" class="nav-link {% if request.endpoint == 'biblioteca' %}ativo{% endif %}">
+          <i class="fas fa-book-open"></i>Minha Biblioteca</a>
+
+        <a href="{{ url_for('add') }}" class="nav-link {% if request.endpoint == 'add' %}ativo{% endif %}">
+          <i class="fas fa-plus-circle"></i>Adicionar Livro</a>
+      </nav>
+
+      <!-- <div class="nav-secao">
+        <strong>ESTATÍSTICAS</strong>
+        <a href="#" class="nav-link"><i class="fas fa-chart-bar"></i>Análises de leitura</a>
+        <a href="#" class="nav-link"><i class="fas fa-list-ul"></i>Lista de Desejos</a>
+        <a href="#" class="nav-link"><i class="fas fa-bullseye"></i>Objetivos de leitura</a>
+      </div> -->
+
+      <div class="perfil">
+        <div class="avatar">😊</div>
+        <div>
+          <p class="nome">Leitor</p>
+          <small>Bibliófilo apaixonado</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="conteudo-principal">
+      <header class="topo-principal">
+        <div class="biblioteca-header-top">
+          <h1>Minha Biblioteca</h1>
+        </div>
+        <a href="{{ url_for('add') }}" class="btn-principal"><i class="fas fa-plus"></i> Adicionar Livro</a>
+      </header>
+
+      <section class="biblioteca-filtros card">
+        <div class="search-bar-full">
+          <i class="fas fa-search"></i>
+          <input id="searchInput" type="text" placeholder="Buscar por título, autor ou gênero...">
+        </div>
+
+        <div class="status-buttons">
+          <button class="filter-btn active" data-status="">Todos</button>
+          <button class="filter-btn" data-status="lendo">Lendo</button>
+          <button class="filter-btn" data-status="concluído">Concluído</button>
+          <button class="filter-btn" data-status="nao_lido">Não Lido</button>
+        </div>
+
+        <div class="dropdowns">
+          <select id="sortSelect" class="dropdown-filtro">
+            <option value="recentes">Ordenar por: Mais Recente</option>
+            <option value="titulo">Ordenar por: Título (A-Z)</option>
+            <option value="nota">Ordenar por: Nota (Maior)</option>
+          </select>
+          <button class="btn-view"><i class="fas fa-th"></i></button>
+        </div>
+      </section>
+
+      <section id="bookList" class="book-list-grid">
+        {% for livro in livros %}
+        {% set progresso = (livro.paginas_lidas / livro.paginas_total * 100) | round(0) if livro.paginas_total > 0 else 0 %}
+
+        <div class="book-card-biblioteca" data-status="{{ livro.status }}" data-titulo="{{ livro.titulo|lower }}" data-autor="{{ livro.autor|lower }}" data-genero="{{ livro.genero|lower }}" data-nota="{{ livro.nota or 0 }}" data-progress="{{ progresso }}">
+
+          <div class="card-cover-container">
+            {% if livro.capa %}
+            <img src="{{ livro.capa }}" alt="Capa de {{ livro.titulo }}">
+            {% else %}
+            <div class="sem-capa"><i class="fas fa-book-open"></i></div>
+            {% endif %}
+
+            {% if livro.status == 'lendo' %}
+            <span class="status-tag status-lendo">LENDO</span>
+            {% elif livro.status == 'concluído' %}
+            <span class="status-tag status-concluido">CONCLUÍDO</span>
+            {% else %}
+            <span class="status-tag status-ainda-nao-lido">NÃO LIDO</span>
+            {% endif %}
+          </div>
+
+          <div class="card-info-content">
+            <h2 class="book-title">{{ livro.titulo }}</h2>
+            <p class="card-author"><i class="fas fa-user-edit"></i> {{ livro.autor }}</p>
+
+            <div class="book-meta">
+              <span class="tag-genero">{{ livro.genero }}</span>
+              <span class="book-year"><i class="fas fa-calendar-alt"></i> {{ livro.ano }}</span>
+            </div>
+
+            {% if livro.nota and livro.nota > 0 %}
+            <div class="avaliacao-area">
+              <div class="estrelas">
+                {% for i in range(1, 6) %}
+                <i class="fas fa-star {% if i <= livro.nota %}filled{% endif %}"></i>
+                {% endfor %}
+              </div>
+              <small>({{ livro.nota }} / 5)</small>
+            </div>
+            {% endif %}
+
+            {% if livro.status == 'lendo' %}
+            <div class="progresso-area">
+              <p class="progresso-texto">Progresso: <span>{{ progresso | int }}%</span></p>
+              <div class="barra-progresso">
+                <div class="progresso" style="width: {{ progresso }}%;"></div>
+              </div>
+            </div>
+            {% elif livro.status == 'concluido' %}
+            <div class="progresso-area progresso-concluido">
+              <p class="progresso-texto"><i class="fas fa-check-circle"></i> Leitura Concluída</p>
+            </div>
+            {% endif %}
+
+
+            <div class="card-actions">
+              <a href="{{ url_for('edit', id=livro.id) }}" class="btn-action btn-edit"><i class="fas fa-edit"></i> Editar</a>
+              <a href="{{ url_for('deletar', id=livro.id) }}" class="btn-action btn-delete" onclick="return confirm('Tem certeza que deseja deletar este livro?')"><i class="fas fa-trash-alt"></i> Excluir</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% if not livros %}
+        {% endif %}
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    const sortSelect = document.getElementById("sortSelect");
+    const bookList = document.getElementById("bookList");
+    const cards = Array.from(bookList.querySelectorAll(".book-card-biblioteca"));
+
+    function aplicarFiltros() {
+      const termo = searchInput.value.toLowerCase();
+      const statusAtivo = document.querySelector(".filter-btn.active").dataset.status;
+
+      cards.forEach(card => {
+        const titulo = card.dataset.titulo;
+        const autor = card.dataset.autor;
+        const genero = card.dataset.genero;
+        const status = card.dataset.status;
+
+        const combinaBusca = titulo.includes(termo) || autor.includes(termo) || genero.includes(termo);
+        const combinaStatus = !statusAtivo || status === statusAtivo;
+
+        card.style.display = (combinaBusca && combinaStatus) ? "" : "none";
+      });
+    }
+
+    function ordenarLivros() {
+      const valor = sortSelect.value;
+      let ordenados = [...cards];
+
+      if (valor === "titulo") {
+        ordenados.sort((a, b) => a.dataset.titulo.localeCompare(b.dataset.titulo));
+      } else if (valor === "nota") {
+        ordenados.sort((a, b) => b.dataset.nota - a.dataset.nota);
+      }
+
+      bookList.innerHTML = "";
+      ordenados.forEach(card => bookList.appendChild(card));
+    }
+
+    searchInput.addEventListener("input", aplicarFiltros);
+    filterButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        filterButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        aplicarFiltros();
+      });
+    });
+    sortSelect.addEventListener("change", ordenarLivros);
+  </script>
+</body>
+
+</html>
