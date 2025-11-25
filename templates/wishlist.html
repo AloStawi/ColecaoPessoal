@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Desejos - Biblioteca Pessoal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <div class="container-dashboard">
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="icone">📚</div>
+        <div class="info">
+          <strong>Biblioteca Pessoal</strong>
+          <small>Sua coleção digital</small>
+        </div>
+      </div>
+
+      <nav class="nav-principal">
+        <p class="nav-titulo">NAVEGAÇÃO</p>
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}ativo{% endif %}"><i class="fas fa-home"></i>Dashboard</a>
+        <a href="{{ url_for('biblioteca') }}" class="nav-link {% if request.endpoint == 'biblioteca' %}ativo{% endif %}"><i class="fas fa-book-open"></i>Minha Biblioteca</a>
+        <a href="{{ url_for('add') }}" class="nav-link {% if request.endpoint == 'add' %}ativo{% endif %}"><i class="fas fa-plus-circle"></i>Adicionar Livro</a>
+        <a href="{{ url_for('wishlist') }}" class="nav-link {% if request.endpoint == 'wishlist' or request.endpoint == 'wishlist_buscar' %}ativo{% endif %}"><i class="fas fa-list-ul"></i>Lista de Desejos</a>
+      </nav>
+
+      <div class="perfil">
+        <div class="avatar">😊</div>
+        <div>
+          <p class="nome">Leitor</p>
+          <small>Bibliófilo apaixonado</small>
+        </div>
+      </div>
+    </aside>
+
+    <main class="conteudo-principal">
+      <header class="topo-principal">
+        <div class="biblioteca-header-top">
+          <h1>Lista de Desejos (Wishlist)</h1>
+          <small>Adicione os próximos livros que você quer ler. ({{ wishlist_livros | length }} itens)</small>
+        </div>
+        <a href="{{ url_for('dashboard') }}" class="btn-principal btn-voltar"><i class="fas fa-arrow-left"></i> Voltar</a>
+      </header>
+
+      <section class="biblioteca-filtros card">
+        <form method="POST" action="{{ url_for('wishlist_buscar') }}" class="search-form">
+          <div class="search-bar-full full-width">
+            <i class="fas fa-search"></i>
+            <input name="termo_busca" type="text" placeholder="Pesquisar livros na Google Books API (Título, Autor...)" value="{{ termo_busca if termo_busca }}" required>
+          </div>
+          <button type="submit" class="btn-principal btn-search-api"><i class="fas fa-search"></i> Buscar</button>
+        </form>
+      </section>
+
+      {% if resultados_busca %}
+      <h2 class="section-title">Resultados da Busca ({{ resultados_busca | length }})</h2>
+      <section class="search-results-grid">
+        {% for livro in resultados_busca %}
+        <div class="book-card-search">
+          <div class="search-cover-container">
+            {% if livro.capa %}
+            <img src="{{ livro.capa }}" alt="Capa de {{ livro.titulo }}">
+            {% else %}
+            <div class="sem-capa"><i class="fas fa-book-open"></i></div>
+            {% endif %}
+          </div>
+          <div class="search-info-content">
+            <h3>{{ livro.titulo }}</h3>
+            <p class="search-author">Autor: {{ livro.autor }}</p>
+            <p class="search-meta">Ano: {{ livro.ano }} | Gênero: {{ livro.genero }}</p>
+            <form method="POST" action="{{ url_for('add_to_wishlist') }}">
+              <input type="hidden" name="titulo" value="{{ livro.titulo }}">
+              <input type="hidden" name="autor" value="{{ livro.autor }}">
+              <input type="hidden" name="ano" value="{{ livro.ano }}">
+              <input type="hidden" name="genero" value="{{ livro.genero }}">
+              <button type="submit" class="btn-action btn-add-wishlist"><i class="fas fa-heart"></i> Adicionar à Wishlist</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </section>
+      {% elif termo_busca %}
+      <p class="msg-vazio">Nenhum livro encontrado para o termo "{{ termo_busca }}".</p>
+      {% endif %}
+
+      <h2 class="section-title">Sua Lista de Desejos</h2>
+      <section class="book-list-grid wishlist-grid">
+        {% for livro in wishlist_livros %}
+        <div class="book-card-biblioteca wishlist-card">
+          <div class="card-cover-container">
+            {% if livro.capa %}
+            <img src="{{ livro.capa }}" alt="Capa de {{ livro.titulo }}">
+            {% else %}
+            <div class="sem-capa"><i class="fas fa-book-open"></i></div>
+            {% endif %}
+            <span class="status-tag status-wishlist">WISHLIST</span>
+          </div>
+          <div class="card-info-content">
+            <h2 class="book-title">{{ livro.titulo }}</h2>
+            <p class="card-author"><i class="fas fa-user-edit"></i> {{ livro.autor }}</p>
+            <div class="card-actions">
+              <a href="{{ url_for('edit', id=livro.id) }}" class="btn-action btn-edit"><i class="fas fa-share-square"></i> Mover p/ Lendo</a>
+              <a href="{{ url_for('deletar', id=livro.id) }}" class="btn-action btn-delete" onclick="return confirm('Tem certeza que deseja remover este livro da Wishlist?')"><i class="fas fa-trash-alt"></i> Remover</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+        {% if not wishlist_livros %}
+        <p class="msg-vazio" style="grid-column: 1 / -1; text-align: center; margin-top: 50px;">
+          Sua lista de desejos está vazia. Comece pesquisando acima!
+        </p>
+        {% endif %}
+      </section>
+    </main>
+  </div>
+</body>
+
+</html>

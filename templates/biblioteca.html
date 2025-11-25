@@ -31,6 +31,8 @@
 
         <a href="{{ url_for('add') }}" class="nav-link {% if request.endpoint == 'add' %}ativo{% endif %}">
           <i class="fas fa-plus-circle"></i>Adicionar Livro</a>
+        <a href="{{ url_for('wishlist') }}" class="nav-link {% if request.endpoint == 'wishlist' or request.endpoint == 'wishlist_buscar' %}ativo{% endif %}"><i class="fas fa-list-ul"></i>Lista de Desejos</a>
+
       </nav>
 
       <!-- <div class="nav-secao">
